@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
-
 import pandas as pd
 
 # only by importing to use
-import pandas_should # noqa
+import pandas_should  # noqa
 
 
-def test_null():
-    """Is there null? (null = NaN or NaT)"""
+def check_null():
+    """Is there null value? (null = NaN or NaT)"""
     data = [
         (1, 'alice', 20),
         (2, 'bob', None),
@@ -18,7 +16,7 @@ def test_null():
     ]
     df = pd.DataFrame(data, columns=['id', 'name', 'age'])
 
-    # have null?
+    # there is null
     assert df.should.have_null()  # DataFrame
     assert df.age.should.have_null()  # Series
 
@@ -30,7 +28,7 @@ def test_null():
     assert df.age.should.have_not_null()  # Series
 
 
-def test_shape():
+def check_shape():
     """What is the shape of DataFrame?"""
     data = [
         (1, 'alice', 20),
@@ -44,11 +42,11 @@ def test_shape():
     assert df.should.shape(2, 3)  # alias
 
     # columns only
-    assert df.should.have_length_of_columns(3)
+    assert df.should.have_width(3)
     assert df.should.columns_len(3)  # alias
 
     # rows only
-    assert df.should.have_length_of_rows(2)
+    assert df.should.have_length(2)
     assert df.should.rows_len(2)  # alias
 
     # Series
@@ -56,7 +54,7 @@ def test_shape():
     assert df.id.should.length(2)  # alias
 
 
-def test_equal():
+def check_equal():
     """Does DataFrames equal?"""
     df1 = pd.DataFrame([1, 2, 3], columns=['id'])
     df2 = pd.DataFrame([1, 2, 3], columns=['id'])
@@ -68,6 +66,10 @@ def test_equal():
 
     # Series
     assert df1.id.should.equal(df2.id)
+
+    # does have same shape?
+    assert df1.should.have_same_length(df2)
+    assert df1.should.have_same_width(df2)
 
     # modify counter part
     df2 = pd.DataFrame([1, 2, 3, 4], columns=['id'])
@@ -81,13 +83,20 @@ def test_equal():
     assert df1.id.should.not_equal(df2.id)
 
 
-def test_value_range():
+def check_value_range():
     """Does values fall within the range?"""
     series = pd.Series([0.0, 0.5, 0.1])
 
-    assert series.should.fall_within_the_range(0, 1)
+    assert series.should.fall_within_range(0, 1)
     assert series.should.value_range(0, 1)
 
 
+def main():
+    check_null()
+    check_shape()
+    check_equal()
+    check_value_range()
+
+
 if __name__ == '__main__':
-    pytest.main(['-v', __file__])
+    main()

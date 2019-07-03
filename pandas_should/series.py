@@ -22,6 +22,16 @@ class EqualAccessorMixin(object):
     # alias
     be_not_equal_to = be_not_equals_to = be_neq_to = neq = not_equal
 
+    def have_same_length(self, other_series, *args):
+        if len(args) < 1:
+            # single series
+            return len(self.series_) == len(other_series)
+
+        # multiple series
+        total_length = sum(len(s) for s in args)
+        total_length += len(other_series)
+        return len(self.series_) == total_length
+
 
 class NullAccessorMixin(object):
 
@@ -55,20 +65,56 @@ class LengthAccessorMixin(object):
 
 class ValueRangeAccessorMixin(object):
 
-    def fall_within_the_range(self, min_, max_):
-        if (self.series_ < min_).any():
+    def fall_within_range(self, range_min, range_max):
+        if (self.series_ < range_min).any():
             return False
 
-        if (self.series_ > max_).any():
+        if (self.series_ > range_max).any():
             return False
 
         return True
 
     # alias
-    value_range = fall_within_the_range
+    value_range = fall_within_range
+
+    def greater_than(self, min_value):
+        if (self.series_ <= min_value).any():
+            return False
+
+        return True
+
+    # alias
+    gt = greater_than
+
+    def greater_than_or_equal(self, min_value):
+        if (self.series_ < min_value).any():
+            return False
+
+        return True
+
+    # alias
+    gte = greater_than_or_equal
+
+    def less_than(self, max_value):
+        if (self.series_ >= max_value).any():
+            return False
+
+        return True
+
+    # alias
+    lt = less_than
+
+    def less_than_or_equal(self, max_value):
+        if (self.series_ > max_value).any():
+            return False
+
+        return True
+
+    # alias
+    lte = less_than_or_equal
 
 
-class CardinalityAccessorMixin(object):
+class ValueVarietyAccessorMixin(object):
 
     def have_number_of_unique_values(self, size):
         number_of_unique_values = len(self.series_.unique())
@@ -83,7 +129,7 @@ class ShouldSeriesAccessor(EqualAccessorMixin,
                            NullAccessorMixin,
                            LengthAccessorMixin,
                            ValueRangeAccessorMixin,
-                           CardinalityAccessorMixin):
+                           ValueVarietyAccessorMixin):
 
     def __init__(self, series):
         self.series_ = series

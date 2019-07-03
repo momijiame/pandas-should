@@ -44,6 +44,65 @@ class TestEqualAccessorMixin(object):
         df = pd.DataFrame([1, 2, 3], columns=['id'])
         assert hasattr(df.should, alias_name)
 
+    def test_have_same_length_true(self):
+        df1 = pd.DataFrame([1, 2, 3], columns=['id'])
+        df2 = pd.DataFrame([1, 2, 3], columns=['id'])
+        assert df1.should.have_same_length(df2)
+
+    def test_have_same_length_false(self):
+        df1 = pd.DataFrame([1, 2, 3], columns=['id'])
+        df2 = pd.DataFrame([1, 2, 3, 4], columns=['id'])
+        assert not df1.should.have_same_length(df2)
+
+    def test_have_same_length_multiple(self):
+        df1 = pd.DataFrame([1, 2, 3], columns=['id'])
+        df2 = pd.DataFrame([1, 2], columns=['id'])
+        df3 = pd.DataFrame([3], columns=['id'])
+        assert df1.should.have_same_length(df2, df3)
+
+    def test_have_same_width_true(self):
+        data1 = [
+            (1, 'alice', 20),
+            (2, 'bob', None),
+            (3, 'carol', 40),
+        ]
+        df1 = pd.DataFrame(data1, columns=['id', 'name', 'age'])
+        data2 = [
+            ('apple', 198, 'red'),
+            ('banana', 128, 'yellow'),
+        ]
+        df2 = pd.DataFrame(data2, columns=['fruit', 'price', 'color'])
+        assert df1.should.have_same_width(df2)
+
+    def test_have_same_width_false(self):
+        data1 = [
+            (1, 'alice', 20),
+            (2, 'bob', None),
+            (3, 'carol', 40),
+        ]
+        df1 = pd.DataFrame(data1, columns=['id', 'name', 'age'])
+        data2 = [
+            ('apple', 198),
+            ('banana', 128),
+        ]
+        df2 = pd.DataFrame(data2, columns=['fruit', 'price'])
+        assert not df1.should.have_same_width(df2)
+
+    def test_have_same_width_multiple(self):
+        data1 = [
+            (1, 'alice', 20),
+            (2, 'bob', None),
+            (3, 'carol', 40),
+        ]
+        df1 = pd.DataFrame(data1, columns=['id', 'name', 'age'])
+        data2 = [
+            ('apple', 198),
+            ('banana', 128),
+        ]
+        df2 = pd.DataFrame(data2, columns=['fruit', 'price'])
+        df3 = pd.DataFrame(['red', 'blue', 'green'])
+        assert df1.should.have_same_width(df2, df3)
+
 
 class TestNullAccessorMixin(object):
 
@@ -100,6 +159,15 @@ class TestNullAccessorMixin(object):
 
 class TestShapeAccessorMixin(object):
 
+    @pytest.mark.parametrize('df1, df2', [
+        (pd.DataFrame([1, 2, 3], columns=['id']),
+         pd.DataFrame(['a', 'b', 'c'], columns=['name'])),
+        (pd.DataFrame([(1, 'a'), (2, 'b')], columns=['id', 'name']),
+         pd.DataFrame([(-2, True), (-1, False)], columns=['a', 'b']))
+    ])
+    def test_be_shaped_like_df(self, df1, df2):
+        assert df1.should.be_shaped_like(df2)
+
     @pytest.mark.parametrize('df, shape', [
         (pd.DataFrame([1, 2, 3], columns=['id']), (3, 1)),
         (pd.DataFrame([(1, 'a'), (2, 'b')], columns=['id', 'name']), (2, 2)),
@@ -123,10 +191,10 @@ class TestShapeAccessorMixin(object):
         (pd.DataFrame([1, 2, 3], columns=['id']), 1),
         (pd.DataFrame([(1, 'a'), (2, 'b')], columns=['id', 'name']), 2),
     ])
-    def test_have_length_of_columns(self, df, length):
-        assert df.should.have_length_of_columns(length)
+    def test_have_width(self, df, length):
+        assert df.should.have_width(length)
 
-    @pytest.mark.parametrize('alias_name', ['columns', 'columns_len'])
+    @pytest.mark.parametrize('alias_name', ['columns', 'columns_len', 'have_length_of_columns'])
     def test_have_length_of_columns_aliases(self, alias_name):
         df = pd.DataFrame([1, 2, 3], columns=['id'])
         assert hasattr(df.should, alias_name)
@@ -135,10 +203,10 @@ class TestShapeAccessorMixin(object):
         (pd.DataFrame([1, 2, 3], columns=['id']), 3),
         (pd.DataFrame([(1, 'a'), (2, 'b')], columns=['id', 'name']), 2),
     ])
-    def test_have_length_of_rows(self, df, length):
-        assert df.should.have_length_of_rows(length)
+    def test_have_length(self, df, length):
+        assert df.should.have_length(length)
 
-    @pytest.mark.parametrize('alias_name', ['rows', 'rows_len'])
+    @pytest.mark.parametrize('alias_name', ['rows', 'rows_len', 'have_length_of_rows'])
     def test_have_length_of_rows_aliases(self, alias_name):
         df = pd.DataFrame([1, 2, 3], columns=['id'])
         assert hasattr(df.should, alias_name)
@@ -158,10 +226,58 @@ class TestValueRangeAccessorMixin(object):
             (3, 4),
         ]
         df = pd.DataFrame(data, columns=['a', 'b'])
-        assert df.should.fall_within_the_range(min_, max_) == expect
+        assert df.should.fall_within_range(min_, max_) == expect
 
     @pytest.mark.parametrize('alias_name', ['value_range'])
     def test_fall_within_the_range_aliases(self, alias_name):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+        assert hasattr(df.should, alias_name)
+
+    def test_greater_than(self):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+
+        assert df.should.greater_than(0)
+        assert not df.should.greater_than(1)
+        assert not df.should.greater_than(2)
+
+    @pytest.mark.parametrize('alias_name', ['gt'])
+    def test_greater_than_aliases(self, alias_name):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+        assert hasattr(df.should, alias_name)
+
+    def test_greater_than_or_equal(self):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+
+        assert df.should.greater_than_or_equal(0)
+        assert df.should.greater_than_or_equal(1)
+        assert not df.should.greater_than_or_equal(2)
+
+    @pytest.mark.parametrize('alias_name', ['gte'])
+    def test_greater_than_or_equal_aliases(self, alias_name):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+        assert hasattr(df.should, alias_name)
+
+    def test_less_than(self):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+
+        assert df.should.less_than(4)
+        assert not df.should.less_than(3)
+        assert not df.should.less_than(2)
+
+    @pytest.mark.parametrize('alias_name', ['lt'])
+    def test_less_than_aliases(self, alias_name):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+        assert hasattr(df.should, alias_name)
+
+    def test_less_than_or_equal(self):
+        df = pd.DataFrame([1, 2, 3], columns=['id'])
+
+        assert df.should.less_than_or_equal(4)
+        assert df.should.less_than_or_equal(3)
+        assert not df.should.less_than_or_equal(2)
+
+    @pytest.mark.parametrize('alias_name', ['lte'])
+    def test_less_than_or_equal_aliases(self, alias_name):
         df = pd.DataFrame([1, 2, 3], columns=['id'])
         assert hasattr(df.should, alias_name)
 

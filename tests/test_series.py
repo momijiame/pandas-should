@@ -44,33 +44,49 @@ class TestEqualAccessorMixin(object):
         s = pd.Series([1, 2, 3])
         assert hasattr(s.should, alias_name)
 
+    def test_have_same_length_true(self):
+        s1 = pd.Series([1, 2, 3])
+        s2 = pd.Series([1, 2, 3])
+        assert s1.should.have_same_length(s2)
+
+    def test_have_same_length_false(self):
+        s1 = pd.Series([1, 2, 3])
+        s2 = pd.Series([1, 2, 3, 4])
+        assert not s1.should.have_same_length(s2)
+
+    def test_have_same_length_multiple(self):
+        s1 = pd.Series([1, 2, 3])
+        s2 = pd.Series([1, 2])
+        s3 = pd.Series([3])
+        assert s1.should.have_same_length(s2, s3)
+
 
 class TestNullAccessorMixin(object):
 
     def test_have_null_true(self):
-        df = pd.Series([1, None, 3])
-        assert df.should.have_null()
+        s = pd.Series([1, None, 3])
+        assert s.should.have_null()
 
     def test_have_null_false(self):
-        df = pd.Series([1, 2, 3])
-        assert not df.should.have_null()
+        s = pd.Series([1, 2, 3])
+        assert not s.should.have_null()
 
     def test_have_null_count(self):
-        df = pd.Series([1, None, 3])
-        assert df.should.have_null(count=True) == (True, 1)
+        s = pd.Series([1, None, 3])
+        assert s.should.have_null(count=True) == (True, 1)
 
     def test_have_not_null_true(self):
-        df = pd.Series([1, 2, 3])
-        assert df.should.have_not_null()
+        s = pd.Series([1, 2, 3])
+        assert s.should.have_not_null()
 
     def test_have_not_null_false(self):
-        df = pd.Series([1, None, 3])
-        assert not df.should.have_not_null()
+        s = pd.Series([1, None, 3])
+        assert not s.should.have_not_null()
 
     @pytest.mark.parametrize('alias_name', ['havent_null'])
     def test_have_not_null_aliases(self, alias_name):
-        df = pd.Series([1, 2, 3])
-        assert hasattr(df.should, alias_name)
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
 
 
 class TestLengthAccessorMixin(object):
@@ -84,8 +100,8 @@ class TestLengthAccessorMixin(object):
 
     @pytest.mark.parametrize('alias_name', ['length'])
     def test_have_length_aliases(self, alias_name):
-        df = pd.Series([1, 2, 3])
-        assert hasattr(df.should, alias_name)
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
 
 
 class TestValueRangeAccessorMixin(object):
@@ -99,10 +115,58 @@ class TestValueRangeAccessorMixin(object):
     def test_fall_within_the_range(self, min_, max_, expect):
         data = [1, 2, 3, 4]
         s = pd.Series(data)
-        assert s.should.fall_within_the_range(min_, max_) == expect
+        assert s.should.fall_within_range(min_, max_) == expect
 
     @pytest.mark.parametrize('alias_name', ['value_range'])
     def test_fall_within_the_range_aliases(self, alias_name):
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
+
+    def test_greater_than(self):
+        s = pd.Series([1, 2, 3])
+
+        assert s.should.greater_than(0)
+        assert not s.should.greater_than(1)
+        assert not s.should.greater_than(2)
+
+    @pytest.mark.parametrize('alias_name', ['gt'])
+    def test_greater_than_aliases(self, alias_name):
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
+
+    def test_greater_than_or_equal(self):
+        s = pd.Series([1, 2, 3])
+
+        assert s.should.greater_than_or_equal(0)
+        assert s.should.greater_than_or_equal(1)
+        assert not s.should.greater_than_or_equal(2)
+
+    @pytest.mark.parametrize('alias_name', ['gte'])
+    def test_greater_than_or_equal_aliases(self, alias_name):
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
+
+    def test_less_than(self):
+        s = pd.Series([1, 2, 3])
+
+        assert s.should.less_than(4)
+        assert not s.should.less_than(3)
+        assert not s.should.less_than(2)
+
+    @pytest.mark.parametrize('alias_name', ['lt'])
+    def test_less_than_aliases(self, alias_name):
+        s = pd.Series([1, 2, 3])
+        assert hasattr(s.should, alias_name)
+
+    def test_less_than_or_equal(self):
+        s = pd.Series([1, 2, 3])
+
+        assert s.should.less_than_or_equal(4)
+        assert s.should.less_than_or_equal(3)
+        assert not s.should.less_than_or_equal(2)
+
+    @pytest.mark.parametrize('alias_name', ['lte'])
+    def test_less_than_or_equal_aliases(self, alias_name):
         s = pd.Series([1, 2, 3])
         assert hasattr(s.should, alias_name)
 
